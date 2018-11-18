@@ -1,0 +1,61 @@
+#!/bin/sh
+
+
+print_usage() {
+	echo "USAGE: docker-compose-version [n]"
+	echo
+	echo "Prints out the currently stable Docker Compose versions in descending order (latest first)."
+	echo "If used with a numerical argument, you can get the latest (1) or second latest (2)."
+	echo
+	echo "Arguments"
+	echo "    1        Print only latest version"
+	echo "    2        Print only second latest version"
+	echo "    3        Print only third latest version"
+	echo "    n        Print only x-th latest version"
+}
+
+if [ "${#}" -eq "1" ]; then
+	if [ "${1}" = "-h" ] || [ "${1}" = "--version" ]; then
+		print_usage
+		exit 0
+	fi
+	if ! echo "${1}" | grep -qE '^[0-9]+$'; then
+		>&2 echo "Error, supplied argument must be an integer."
+		exit 1
+	fi
+fi
+
+if ! command -v curl >/dev/null 2>&1; then
+	>&2 echo "Error, 'curl' binary is required but not found in path."
+	exit 1
+fi
+if ! command -v jq >/dev/null 2>&1; then
+	>&2 echo "Error, 'jq' binary is required but not found in path."
+	exit 1
+fi
+
+i=0; max=100;
+while [ $i -lt $max ]; do
+	if VERSIONS="$(curl -sS https://api.github.com/repos/docker/compose/releases \
+			| jq '.[].tag_name' \
+			| grep -E '"[.0-9]+"' \
+			| sed 's/"//g' )"; then
+		if [ -z "${VERSIONS}" ]; then
+			>&2 echo "Got rempty result. Trying again."
+			i=$((i+1))
+			sleep 1
+		else
+			break;
+		fi
+	else
+		>&2 echo "Failed to fetch API. trying again."
+		i=$((i+1))
+		sleep 1
+	fi
+done
+
+if [ "${#}" -eq "1" ]; then
+	echo "${VERSIONS}" | head -${1} | tail -1
+else
+	echo "${VERSIONS}"
+fi| sort -ur
