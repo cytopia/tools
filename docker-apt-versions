@@ -1,0 +1,44 @@
+#!/bin/sh
+
+
+print_usage() {
+	echo "USAGE: docker-apt-version [n]"
+	echo
+	echo "Prints out the currently stable Docker versions in Debian-based apt in descending order (latest first)."
+	echo "If used with a numerical argument, you can get the latest (1) or second latest (2)."
+	echo
+	echo "Arguments"
+	echo "    1        Print only latest version"
+	echo "    2        Print only second latest version"
+	echo "    3        Print only third latest version"
+	echo "    n        Print only x-th latest version"
+}
+
+if [ "${#}" -eq "1" ]; then
+	if [ "${1}" = "-h" ] || [ "${1}" = "--version" ]; then
+		print_usage
+		exit 0
+	fi
+	if ! echo "${1}" | grep -qE '^[0-9]+$'; then
+		>&2 echo "Error, supplied argument must be an integer."
+		exit 1
+	fi
+fi
+
+if ! command -v apt-cache >/dev/null 2>&1; then
+	>&2 echo "Error, 'apt-cache' binary is required but not found in path."
+	exit 1
+fi
+
+VERSIONS="$(
+	apt-cache madison docker-ce \
+		| awk -F'|' '{print $2}' \
+		| sed -e 's/^\s*//g' -e 's/\s*$//g' \
+		| sort -Vr
+)"
+
+if [ "${#}" -eq "1" ]; then
+	echo "${VERSIONS}" | head -${1} | tail -1
+else
+	echo "${VERSIONS}"
+fi

@@ -58,4 +58,4 @@ if [ "${#}" -eq "1" ]; then
 	echo "${VERSIONS}" | head -${1} | tail -1
 else
 	echo "${VERSIONS}"
-fi| sort -ur
+fi
