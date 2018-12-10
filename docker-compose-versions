@@ -34,10 +34,6 @@ if ! command -v curl >/dev/null 2>&1; then
 	>&2 echo "Error, 'curl' binary is required but not found in path."
 	exit 1
 fi
-if ! command -v jq >/dev/null 2>&1; then
-	>&2 echo "Error, 'jq' binary is required but not found in path."
-	exit 1
-fi
 
 i=0; max=1000;
 while [ $i -lt $max ]; do
