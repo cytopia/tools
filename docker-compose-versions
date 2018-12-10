@@ -1,8 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/sh
 
 set -e
 set -u
-set -o pipefail
+
+USERAGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
 
 
 print_usage() {
@@ -41,26 +42,24 @@ fi
 i=0; max=1000;
 while [ $i -lt $max ]; do
 
-	until RELEASES="$( curl -sS https://api.github.com/repos/docker/compose/releases )"; do
-		>&2 echo "Unable to fetch releases. Trying again."
-		sleep 1
-	done
-
-	if VERSIONS="$( echo "${RELEASES}" \
-			| jq '.[].tag_name' \
-			| grep -E '"[.0-9]+"' \
-			| sed 's/"//g' )"; then
-
-		if [ -z "${VERSIONS}" ]; then
-			>&2 echo "Got rempty result. Trying again."
-		else
+	while [ $i -lt $max ]; do
+		if RELEASES="$( curl -sS -H "User-Agent: ${USERAGENT}" https://raw.githubusercontent.com/docker/compose/master/CHANGELOG.md )"; then
 			break;
+		else
+			>&2 echo "[Fail] Unable to fetch releases. Trying again."
+			sleep 1
 		fi
+	done
+	if VERSIONS="$( echo "${RELEASES}" | grep -E '[.0-9]+\s+\([0-9\-]+\)' )"; then
+		VERSIONS="$( echo "${VERSIONS}" | awk '{print $1}' )"
+		break
 	else
-		>&2 echo "Failed to fetch API. trying again."
+		>&2 echo "[Fail] Unable to parse versions. Trying again."
+		>&2 echo "${RELEASES}"
 	fi
 
 	i=$((i+1))
+	sleep 1
 
 done
 
