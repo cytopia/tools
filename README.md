@@ -4,25 +4,25 @@
 ## Usage
 
 ```bash
-# Get latest Docker versions in Debian apt (desc order)
+# Get all Docker versions availabl in Debian apt (desc order)
 curl -sS https://raw.githubusercontent.com/cytopia/tools/master/docker-apt-versions | sh
 
-# Get second latest Docker version in Debian apt
+# Get second latest Docker version availabl in Debian apt
 curl -sS https://raw.githubusercontent.com/cytopia/tools/master/docker-apt-versions | sh -s 2
 ```
 
 ```bash
-# Get latest Docker versions (desc order)
+# Get all released Docker versions (desc order)
 curl -sS https://raw.githubusercontent.com/cytopia/tools/master/docker-versions | sh
 
-# Get second latest Docker version
-curl -sS https://raw.githubusercontent.com/cytopia/tools/master/docker-versions | sh -s 2
+# Get third latest released Docker version
+curl -sS https://raw.githubusercontent.com/cytopia/tools/master/docker-versions | sh -s 3
 ```
 
 ```bash
-# Get latest Docker Compose versions (desc order)
+# Get all released Docker Compose versions (desc order)
 curl -sS https://raw.githubusercontent.com/cytopia/tools/master/docker-compose-versions | sh
 
-# Get fourth latest Docker Compose version
+# Get fourth latest released Docker Compose version
 curl -sS https://raw.githubusercontent.com/cytopia/tools/master/docker-compose-versions | sh -s 4
 ```
