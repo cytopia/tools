@@ -1,4 +1,8 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+set -e
+set -u
+set -o pipefail
 
 
 print_usage() {
@@ -34,24 +38,30 @@ if ! command -v jq >/dev/null 2>&1; then
 	exit 1
 fi
 
-i=0; max=100;
+i=0; max=1000;
 while [ $i -lt $max ]; do
-	if VERSIONS="$(curl -sS https://api.github.com/repos/docker/compose/releases \
+
+	until RELEASES="$( curl -sS https://api.github.com/repos/docker/compose/releases )"; do
+		>&2 echo "Unable to fetch releases. Trying again."
+		sleep 1
+	done
+
+	if VERSIONS="$( echo "${RELEASES}" \
 			| jq '.[].tag_name' \
 			| grep -E '"[.0-9]+"' \
 			| sed 's/"//g' )"; then
+
 		if [ -z "${VERSIONS}" ]; then
 			>&2 echo "Got rempty result. Trying again."
-			i=$((i+1))
-			sleep 1
 		else
 			break;
 		fi
 	else
 		>&2 echo "Failed to fetch API. trying again."
-		i=$((i+1))
-		sleep 1
 	fi
+
+	i=$((i+1))
+
 done
 
 if [ "${#}" -eq "1" ]; then
